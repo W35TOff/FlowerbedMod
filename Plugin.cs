@@ -78,7 +78,6 @@ namespace TrowelMod
             // Globally turn off configuration options for your pieces, omit if you don't want to do this.
             BuildPiece.ConfigurationEnabled = false;
 
-            // Format: new("AssetBundleName", "PrefabName", "FolderName");
             BuildPiece fbPiece = new("flowerbedbundle", "piece_flower_bed");
             fbPiece.Name.English("1x1 Flowerbed");
             fbPiece.Description.English("Plant Stuff");
@@ -421,17 +420,16 @@ namespace TrowelMod
                 if (comfort <= 0) return;
 
 
-                float comfortXP = comfort * 1.0f; // You can adjust multiplier
+                float comfortXP = comfort * 1.0f; // Adjust multiplier
                 Player.m_localPlayer.RaiseSkill("Feng Shui", comfortXP);
 
-                // Optional: Store comfort value in ZDO
+                // Store comfort value in ZDO
                 var znetView = __instance.GetComponent<ZNetView>();
                 if (znetView && znetView.IsOwner())
                 {
                     znetView.GetZDO().Set("FengShuiSkill Value", comfort);
                 }
 
-                // Optionally print debug message
                 Debug.Log($"[FengShuiSkill] Gained {comfortXP} XP from placing comfort item: {__instance.m_name} (Comfort {comfort})");
             }
         }
@@ -444,14 +442,12 @@ namespace TrowelMod
             {
                 if (__instance != Player.m_localPlayer) return;
 
-                float skillFactor = __instance.GetSkillFactor("Feng Shui"); // Value between 0 and 1
+                float skillFactor = __instance.GetSkillFactor("Feng Shui");
 
-                // Example: Up to +10 extra comfort at max skill
                 float comfortBonus = skillFactor * 10f;
 
                 __result += Mathf.FloorToInt(comfortBonus);
 
-                // Optional debug output
                 UnityEngine.Debug.Log($"[FengShuiSkill] Comfort skill factor: {skillFactor}, bonus comfort: {comfortBonus}, total comfort: {__result}");
             }
         }
@@ -574,7 +570,7 @@ namespace TrowelMod
                     return true;
                 }
 
-                // If piece being placed REQUIRES a flowerbed and isn't being placed on one, block placement and refund
+                // Refund if not on Flowerbed
                 if (piece.GetComponent<RequiresFlowerbed>() != null)
                 {
                     // Refund resources to player
@@ -609,7 +605,6 @@ namespace TrowelMod
             var piece = ghost.GetComponent<Piece>();
             if (piece == null) return;
 
-            // Only apply to pieces that require a flowerbed
             if (piece.GetComponent<RequiresFlowerbed>() != null)
             {
                 bool validPlacement = false;
@@ -623,12 +618,10 @@ namespace TrowelMod
                     }
                 }
 
-                // Change ghost color based on placement validity
                 SetGhostColor(ghost, validPlacement ? Color.white : Color.red);
             }
             else
             {
-                // Restore default color for normal pieces
                 SetGhostColor(ghost, Color.white);
             }
         }
@@ -662,17 +655,14 @@ namespace TrowelMod
 
             var zdo = __instance.m_nview.GetZDO();
 
-            // Has this growth boost already been applied?
+            // Checks if growth boost already applied
             if (zdo.GetBool(GrowthAuraAppliedKey)) return;
 
-            // How long does this plant take to grow?
             float growTime = __instance.m_growTime;
-            if (growTime <= 0f) return; // just in case
+            if (growTime <= 0f) return;
 
-            // Calculate how much time to subtract from plantTime
             double timeReduction = growTime * GROWTH_REDUCTION_PERCENT;
 
-            // Move the plantTime into the past by that amount
             long plantTimeTicks = zdo.GetLong(ZDOVars.s_plantTime, ZNet.instance.GetTime().Ticks);
             DateTime adjustedPlantTime = new DateTime(plantTimeTicks).AddSeconds(-timeReduction);
             zdo.Set(ZDOVars.s_plantTime, adjustedPlantTime.Ticks);
@@ -692,7 +682,6 @@ namespace TrowelMod
 
             Vector3 originalPos = tracker.originalPosition;
 
-            // Search for the new grown object near the original position
             GameObject closest = FindClosestNewlyGrownObject(originalPos);
             if (closest != null)
             {
@@ -700,7 +689,6 @@ namespace TrowelMod
             }
         }
 
-        // Utility method to find nearest root object near sapling
         static GameObject FindClosestNewlyGrownObject(Vector3 pos)
         {
             float searchRadius = 5f;
